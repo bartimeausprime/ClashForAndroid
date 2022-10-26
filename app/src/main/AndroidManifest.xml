@@ -71,6 +71,14 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".TaskerSettingsActivity"
+            android:exported="true"
+            android:label="@string/launch_name">
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.EDIT_SETTING" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".ApkBrokenActivity"
             android:configChanges="uiMode"
             android:exported="false"
@@ -174,6 +182,17 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.github.kr328.clash.TaskerReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":background"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING"/>
             </intent-filter>
         </receiver>
     </application>

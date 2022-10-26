@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.androidx.coordinator)
     implementation(libs.androidx.recyclerview)
     implementation(libs.google.material)
+    implementation(libs.twofortyfouram.plugin.api)
 }
 
 tasks.getByName("clean", type = Delete::class) {

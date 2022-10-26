@@ -35,6 +35,7 @@ dependencyResolutionManagement {
             val kaidl = "1.15"
             val room = "2.4.2"
             val multiprocess = "1.0.0"
+            val twofortyfouram = "1.0.4"
 
             library("build-android", "com.android.tools.build:gradle:$agp")
             library("build-kotlin-common", "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin")
@@ -57,6 +58,7 @@ dependencyResolutionManagement {
             library("kaidl-compiler", "com.github.kr328.kaidl:kaidl:$kaidl")
             library("kaidl-runtime", "com.github.kr328.kaidl:kaidl-runtime:$kaidl")
             library("rikkax-multiprocess", "dev.rikka.rikkax.preference:multiprocess:$multiprocess")
+            library("twofortyfouram-plugin-api", "com.twofortyfouram:android-plugin-api-for-locale:$twofortyfouram")
         }
     }
 }
