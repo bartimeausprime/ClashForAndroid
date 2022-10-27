@@ -24,7 +24,7 @@ class TaskerSettingsDesign(context: Context) : Design<TaskerSettingsDesign.Reque
 
     private val dummyProfile = ProfileSpec(
         uuid = UUID(0L, 0L),
-        name = "使用当前配置",
+        name = context.getString(R.string.use_current_profile),
     )
 
     suspend fun init(currentSettings: TaskerSettings, profiles: List<Profile>) {

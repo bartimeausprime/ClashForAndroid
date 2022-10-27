@@ -62,17 +62,17 @@ class TaskerSettingsActivity : BaseActivity<TaskerSettingsDesign>() {
             val profile = profile
             val desc = if (profile == null) {
                 if (turnOn) {
-                    "Turn on"
+                    context.getString(R.string.start_clash)
                 } else {
-                    "Turn off"
+                    context.getString(R.string.stop_clash)
                 }
             } else {
                 val p = pm.queryByUUID(profile)?.name ?: profile.toString()
 
                 if (turnOn) {
-                    "Turn on and switch to profile \"$p\""
+                    context.getString(R.string.format_start_and_switch_to_profile, p)
                 } else {
-                    "Switch to profile \"$p\""
+                    context.getString(R.string.format_switch_to_profile, p)
                 }
             }
 
