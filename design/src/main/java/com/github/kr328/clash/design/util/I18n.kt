@@ -54,8 +54,16 @@ fun Date.format(
     }
 }
 
+fun Long.formatDate(
+    context: Context,
+    includeDate: Boolean = true,
+    includeTime: Boolean = true,
+): String = Date(this).format(context, includeDate, includeTime)
+
 fun Long.toBytesString(): String {
     return when {
+        this > 1024 * 1024 * 1024 * 1024L ->
+            String.format("%.2f TiB", (this.toDouble() / 1024 / 1024 / 1024 / 1024))
         this > 1024 * 1024 * 1024 ->
             String.format("%.2f GiB", (this.toDouble() / 1024 / 1024 / 1024))
         this > 1024 * 1024 ->

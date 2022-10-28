@@ -16,6 +16,7 @@
 
         <import type="com.github.kr328.clash.design.util.I18nKt" />
         <import type="com.github.kr328.clash.design.util.IntervalKt" />
+        <import type="android.view.View" />
     </data>
 
     <RelativeLayout
@@ -44,7 +45,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/elapsed_view"
+            android:layout_toStartOf="@id/menu_view"
+            android:layout_marginEnd="@dimen/item_midden_margin"
             android:layout_toEndOf="@id/icon_view"
             android:orientation="vertical"
             android:paddingVertical="@dimen/item_padding_vertical">
@@ -59,19 +61,31 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/item_text_margin"
-                android:text="@{profile.pending ? @string/format_type_unsaved(I18nKt.toString(profile.type, context)) : I18nKt.toString(profile.type, context)}"
+                android:text="@{profile.pending ? @string/format_type_unsaved(I18nKt.toString(profile.type, context)) : @string/format_type_saved(I18nKt.toString(profile.type, context), IntervalKt.elapsedIntervalString(currentTime.value - profile.updatedAt, context))}"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-        </LinearLayout>
 
-        <TextView
-            android:id="@+id/elapsed_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/item_midden_margin"
-            android:layout_toStartOf="@id/menu_view"
-            android:text="@{IntervalKt.elapsedIntervalString(currentTime.value - profile.updatedAt, context)}"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Tooltip" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/item_text_margin"
+                android:orientation="horizontal"
+                android:visibility="@{profile.subInfo == null ? View.GONE : View.VISIBLE}">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{@string/format_profile_usage(I18nKt.toBytesString(profile.subInfo.upload + profile.subInfo.download), I18nKt.toBytesString(profile.subInfo.total))}"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/item_text_margin"
+                    android:text="@{I18nKt.formatDate(profile.subInfo.expire, context, true, false)}"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                    android:visibility="@{profile.subInfo.expire &lt;= 0 ? View.GONE : View.VISIBLE}" />
+            </LinearLayout>
+        </LinearLayout>
 
         <View
             android:layout_width="@dimen/divider_size"
