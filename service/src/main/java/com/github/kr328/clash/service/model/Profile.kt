@@ -11,6 +11,14 @@ import kotlinx.serialization.UseSerializers
 import java.util.*
 
 @Serializable
+data class SubInfo(
+    val upload: Long,
+    val download: Long,
+    val total: Long,
+    val expire: Long,
+)
+
+@Serializable
 data class Profile(
     val uuid: UUID,
     val name: String,
@@ -22,6 +30,8 @@ data class Profile(
     val updatedAt: Long,
     val imported: Boolean,
     val pending: Boolean,
+
+    val subInfo: SubInfo?,
 ) : Parcelable {
     enum class Type {
         File, Url, External

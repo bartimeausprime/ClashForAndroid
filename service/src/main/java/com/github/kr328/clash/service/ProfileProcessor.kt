@@ -4,21 +4,22 @@ import android.content.Context
 import android.net.Uri
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.core.Clash
-import com.github.kr328.clash.service.data.Imported
-import com.github.kr328.clash.service.data.ImportedDao
-import com.github.kr328.clash.service.data.Pending
-import com.github.kr328.clash.service.data.PendingDao
+import com.github.kr328.clash.service.data.*
 import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.service.model.SubInfo
 import com.github.kr328.clash.service.remote.IFetchObserver
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
 import com.github.kr328.clash.service.util.processingDir
 import com.github.kr328.clash.service.util.sendProfileChanged
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -57,6 +58,12 @@ object ProfileProcessor {
                     }
                 }.await()
 
+                val subInfo = if (snapshot.type == Profile.Type.Url) {
+                    fetchSubscriptionUserInfo(snapshot.source)
+                } else {
+                    null
+                }
+
                 profileLock.withLock {
                     if (PendingDao().queryByUUID(snapshot.uuid) == snapshot) {
                         context.importedDir.resolve(snapshot.uuid.toString())
@@ -82,6 +89,18 @@ object ProfileProcessor {
                         }
 
                         PendingDao().remove(snapshot.uuid)
+
+                        subInfo?.let {
+                            SubscriptionUserInfoDao().setInfo(
+                                SubscriptionUserInfo(
+                                    uuid = snapshot.uuid,
+                                    upload = it.upload,
+                                    download = it.download,
+                                    total = it.total,
+                                    expire = it.expire
+                                )
+                            )
+                        }
 
                         context.pendingDir.resolve(snapshot.uuid.toString())
                             .deleteRecursively()
@@ -121,11 +140,29 @@ object ProfileProcessor {
                     }
                 }.await()
 
+                val subInfo = if (snapshot.type == Profile.Type.Url) {
+                    fetchSubscriptionUserInfo(snapshot.source)
+                } else {
+                    null
+                }
+
                 profileLock.withLock {
                     if (ImportedDao().exists(snapshot.uuid)) {
                         context.importedDir.resolve(snapshot.uuid.toString()).deleteRecursively()
                         context.processingDir
                             .copyRecursively(context.importedDir.resolve(snapshot.uuid.toString()))
+
+                        subInfo?.let {
+                            SubscriptionUserInfoDao().setInfo(
+                                SubscriptionUserInfo(
+                                    uuid = snapshot.uuid,
+                                    upload = it.upload,
+                                    download = it.download,
+                                    total = it.total,
+                                    expire = it.expire
+                                )
+                            )
+                        }
 
                         context.sendProfileChanged(snapshot.uuid)
                     }
@@ -187,6 +224,51 @@ object ProfileProcessor {
                 throw IllegalArgumentException("Unsupported url $source")
             interval != 0L && TimeUnit.MILLISECONDS.toMinutes(interval) < 15 ->
                 throw IllegalArgumentException("Invalid interval")
+        }
+    }
+
+    private fun String.find(regex: String, group: Int): String? {
+        return regex.toRegex().find(this)?.groupValues?.get(group)
+    }
+
+    /**
+     * Adopted from:
+     * https://github.com/vernesong/OpenClash/blob/d32fc5424fc37f098354cd162d1a90cf5a7e2183/luci-app-openclash/luasrc/controller/openclash.lua#L582
+     */
+    private suspend fun fetchSubscriptionUserInfo(url: String): SubInfo? {
+        return try {
+            val userInfoStr = withContext(Dispatchers.IO) {
+                arrayOf("Clash", "Quantumultx").forEach { ua ->
+                    val conn = URL(url).openConnection() as HttpURLConnection
+                    try {
+                        conn.requestMethod = "GET"
+                        conn.setRequestProperty("User-Agent", ua)
+
+                        if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                            return@withContext conn.headerFields.entries.firstOrNull{
+                                "subscription-userinfo".equals(it.key, true)
+                            }?.value?.firstOrNull()
+                        }
+                    } finally {
+                        conn.disconnect()
+                    }
+                }
+                null
+            }
+
+            userInfoStr?.let {
+                Log.i("Parse user info: $it")
+
+                SubInfo(
+                    upload = it.find("upload=(\\d+)", 1)!!.toLong(),
+                    download = it.find("download=(\\d+)", 1)!!.toLong(),
+                    total = it.find("total=(\\d+)", 1)!!.toLong(),
+                    expire = it.find("expire=(\\d+)", 1)?.toLong()?.times(1000) ?: -1,
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("Failed to fetch subscription user info", e)
+            null
         }
     }
 }

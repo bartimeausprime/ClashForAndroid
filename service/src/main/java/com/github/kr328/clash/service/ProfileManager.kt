@@ -1,11 +1,9 @@
 package com.github.kr328.clash.service
 
 import android.content.Context
-import com.github.kr328.clash.service.data.Database
-import com.github.kr328.clash.service.data.ImportedDao
-import com.github.kr328.clash.service.data.Pending
-import com.github.kr328.clash.service.data.PendingDao
+import com.github.kr328.clash.service.data.*
 import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.service.model.SubInfo
 import com.github.kr328.clash.service.remote.IFetchObserver
 import com.github.kr328.clash.service.remote.IProfileManager
 import com.github.kr328.clash.service.store.ServiceStore
@@ -157,12 +155,21 @@ class ProfileManager(private val context: Context) : IProfileManager,
     private suspend fun resolveProfile(uuid: UUID): Profile? {
         val imported = ImportedDao().queryByUUID(uuid)
         val pending = PendingDao().queryByUUID(uuid)
+        val subUserInfo = SubscriptionUserInfoDao().queryByUUID(uuid)
 
         val active = store.activeProfile
         val name = pending?.name ?: imported?.name ?: return null
         val type = pending?.type ?: imported?.type ?: return null
         val source = pending?.source ?: imported?.source ?: return null
         val interval = pending?.interval ?: imported?.interval ?: return null
+        val subInfo = subUserInfo?.let {
+            SubInfo(
+                upload = it.upload,
+                download = it.download,
+                total = it.total,
+                expire = it.expire,
+            )
+        }
 
         return Profile(
             uuid,
@@ -173,7 +180,8 @@ class ProfileManager(private val context: Context) : IProfileManager,
             interval,
             resolveUpdatedAt(uuid),
             imported != null,
-            pending != null
+            pending != null,
+            subInfo,
         )
     }
 
