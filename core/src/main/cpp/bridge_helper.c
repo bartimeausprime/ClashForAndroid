@@ -1,12 +1,19 @@
 #include "bridge_helper.h"
 
+/**
+ * Compress an uint64 into an uint32 with minimum data lost
+ *
+ * The result will be 3bits of exponent (e) and 29bits of fraction (f).
+ *
+ * The original value can be recovered using f << (10 * e)
+ */
 uint64_t down_scale_traffic(uint64_t value) {
-    if (value > 1042 * 1024 * 1024)
-        return ((value * 100u / 1024u / 1024u / 1024u) & 0x3FFFFFFFu) | (3u << 30u);
-    if (value > 1024 * 1024)
-        return ((value * 100u / 1024u / 1024u) & 0x3FFFFFFFu) | (2u << 30u);
-    if (value > 1024)
-        return ((value * 100u / 1024u) & 0x3FFFFFFFu) | (1u << 30u);
-    return value & 0x3FFFFFFFu;
+    uint64_t e = 0;
+    while (value > 0x1FFFFFFFu) {
+        e++;
+        value >>= 10;
+    }
+
+    return value | (e << 29);
 }
 
