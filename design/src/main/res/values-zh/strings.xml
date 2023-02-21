@@ -217,4 +217,9 @@
     <string name="allow_bypass">允许应用绕过</string>
     <string name="allow_bypass_summary">允许其他应用绕过 VPN</string>
     <string name="sniff_tls_sni">嗅探 TLS 的 SNI</string>
+    <string name="start_clash">启动 Clash</string>
+    <string name="stop_clash">停止 Clash</string>
+    <string name="use_current_profile">使用当前配置</string>
+    <string name="format_start_and_switch_to_profile">启动 Clash 并切换到配置 %s</string>
+    <string name="format_switch_to_profile">切换到配置 %s</string>
 </resources>

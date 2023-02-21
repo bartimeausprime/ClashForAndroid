@@ -279,4 +279,10 @@
     <string name="version_updated_tips">The settings have been reseted and the old profiles needs to be saved again.</string>
 
     <string name="mode_switch_tips">Valid only for current session</string>
+
+    <string name="start_clash">Start Clash</string>
+    <string name="stop_clash">Stop Clash</string>
+    <string name="use_current_profile">Use current profile</string>
+    <string name="format_start_and_switch_to_profile">Start Clash and switch to profile %s</string>
+    <string name="format_switch_to_profile">Switch to profile %s</string>
 </resources>
